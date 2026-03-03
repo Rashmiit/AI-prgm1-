@@ -1,0 +1,62 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+# Generate a sample dataset for binary classification
+def generate_binary_dataset(n_samples=100, centers=2, random_state=42):
+    X, y = make_blobs(
+        n_samples=n_samples,
+        centers=centers,
+        random_state=random_state,
+        cluster_std=1.5
+    )
+    return X, y
+
+# Plot decision boundary
+def plot_decision_boundary(X, y, model):
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+
+    xx, yy = np.meshgrid(
+        np.arange(x_min, x_max, 0.01),
+        np.arange(y_min, y_max, 0.01)
+    )
+
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+
+    plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.coolwarm)
+    plt.scatter(X[:, 0], X[:, 1], c=y, s=20, edgecolor='k', cmap=plt.cm.coolwarm)
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.title('SVM Decision Boundary')
+    plt.show()
+
+# Main program
+if __name__ == "__main__":
+    # Generate dataset
+    X, y = generate_binary_dataset()
+
+    # Print dataset
+    dataset = pd.DataFrame({
+        "Feature 1": X[:, 0],
+        "Feature 2": X[:, 1],
+        "Label": y
+    })
+    print("Dataset:")
+    print(dataset)
+
+    # Split dataset
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    # Train SVM model
+    svm_model = SVC(kernel='linear')
+    svm_model.fit(X_train, y_train)
+
+    # Plot decision boundary
+    plot_decision_boundary(X, y, svm_model)
