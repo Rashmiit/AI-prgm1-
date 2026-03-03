@@ -1,0 +1,75 @@
+import numpy as np
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+import matplotlib.pyplot as plt
+
+# --------------------------------------------
+# ID3 Decision Tree Algorithm Demonstration
+# Using the PlayTennis Dataset
+# --------------------------------------------
+
+data = {
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Rain',
+'Overcast',
+                'Sunny', 'Sunny', 'Rain', 'Sunny', 'Overcast',
+'Overcast', 'Rain'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool',
+'Cool',
+                    'Mild', 'Cool', 'Mild', 'Mild', 'Mild', 'Hot',
+'Mild'],
+    'Humidity': ['High', 'High', 'High', 'High', 'Normal', 'Normal',
+'Normal',
+                 'High', 'Normal', 'Normal', 'Normal', 'High',
+'Normal', 'High'],
+    'Windy': ['False', 'True', 'False', 'False', 'False', 'True',
+'True',
+              'False', 'False', 'False', 'True', 'True', 'False',
+'True'],
+    'PlayTennis': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes',
+                   'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+}
+
+# Convert dataset to DataFrame
+df = pd.DataFrame(data)
+
+# Convert categorical attributes to numeric using one-hot encoding
+X = pd.get_dummies(df[['Outlook', 'Temperature', 'Humidity', 'Windy']])
+
+# Convert output labels to binary
+y = df['PlayTennis'].apply(lambda x: 1 if x == 'Yes' else 0)
+
+# Train the Decision Tree using ID3 (criterion="entropy")
+model = DecisionTreeClassifier(criterion='entropy')
+model.fit(X, y)
+
+# --------------------------------------------
+# Visualize the Decision Tree
+# --------------------------------------------
+plt.figure(figsize=(14, 8))
+plot_tree(
+model,
+feature_names=X.columns,
+class_names=['No', 'Yes'],
+filled=True,
+rounded=True
+)
+plt.title("ID3 Decision Tree (PlayTennis Dataset)")
+plt.show()
+# --------------------------------------------
+# Example Prediction
+# --------------------------------------------
+data_example = {
+'Outlook': ['Rain'],
+'Temperature': ['Mild'],
+'Humidity': ['High'],
+'Windy': ['True']
+}
+# Convert example to DataFrame
+example_df = pd.DataFrame(data_example)
+# One-hot encode and align columns with the training dataset
+example_encoded = pd.get_dummies(example_df).reindex(columns=X.columns,
+fill_value=0)
+# Predict
+prediction = model.predict(example_encoded)
+print(f"Prediction for the example: {'Yes' if prediction[0] == 1 else
+'No'}")
