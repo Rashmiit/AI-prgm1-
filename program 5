@@ -1,0 +1,71 @@
+import numpy as np
+
+# Sigmoid activation function
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Derivative of sigmoid
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Initialize network
+def initialize_network(input_size, hidden_size, output_size):
+    np.random.seed(42)
+    return {
+        'W1': np.random.rand(input_size, hidden_size),
+        'W2': np.random.rand(hidden_size, output_size),
+        'b1': np.random.rand(1, hidden_size),
+        'b2': np.random.rand(1, output_size)
+    }
+
+# Forward pass
+def forward_pass(network, X):
+    z1 = np.dot(X, network['W1']) + network['b1']
+    a1 = sigmoid(z1)
+
+    z2 = np.dot(a1, network['W2']) + network['b2']
+    a2 = sigmoid(z2)
+
+    return a1, a2
+
+# Backward pass
+def backward_pass(network, X, y, a1, a2, lr):
+    error = y - a2
+    d2 = error * sigmoid_derivative(a2)
+
+    error_hidden = d2.dot(network['W2'].T)
+    d1 = error_hidden * sigmoid_derivative(a1)
+
+    network['W2'] += a1.T.dot(d2) * lr
+    network['b2'] += np.sum(d2, axis=0, keepdims=True) * lr
+
+    network['W1'] += X.T.dot(d1) * lr
+    network['b1'] += np.sum(d1, axis=0, keepdims=True) * lr
+
+# Train network
+def train_network(network, X, y, epochs, lr):
+    for epoch in range(epochs):
+        a1, a2 = forward_pass(network, X)
+        backward_pass(network, X, y, a1, a2, lr)
+
+        if epoch % 1000 == 0:
+            loss = np.mean((y - a2) ** 2)
+            print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+# Predict
+def predict(network, X):
+    _, output = forward_pass(network, X)
+    return output
+
+# Main
+if __name__ == "__main__":
+    # XOR dataset
+    X = np.array([[0,0], [0,1], [1,0], [1,1]])
+    y = np.array([[0], [1], [1], [0]])
+
+    net = initialize_network(2, 4, 1)
+    train_network(net, X, y, epochs=10000, lr=0.1)
+
+    predictions = predict(net, X)
+    print("\nPredictions:")
+    print(np.round(predictions))
