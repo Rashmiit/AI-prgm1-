@@ -1,0 +1,61 @@
+import numpy as np
+from sklearn.metrics.pairwise import euclidean_distances
+import pandas as pd
+
+class CaseBasedReasoning:
+    def __init__(self):   # FIXED
+        self.cases = []   # List to store past cases
+
+    def add_case(self, features, label):
+        """Add a new case to the case base."""
+        self.cases.append((features, label))
+
+    def retrieve(self, query, k=1):
+        """Retrieve the k most similar cases to the query."""
+        if not self.cases:
+            raise ValueError("No cases available for retrieval.")
+
+        # Compute distances between query and stored cases
+        distances = [
+            (euclidean_distances([query], [features])[0][0], label)
+            for features, label in self.cases
+        ]
+
+        # Sort by distance (ascending)
+        distances.sort(key=lambda x: x[0])
+        return distances[:k]  # Return top k cases
+
+    def predict(self, query, k=1):
+        """Predict the label for the query using majority vote."""
+        nearest_cases = self.retrieve(query, k)
+        labels = [label for _, label in nearest_cases]
+
+        # Majority voting
+        return max(set(labels), key=labels.count)
+
+
+# ----------------------------------------------------------
+# Main Program
+# ----------------------------------------------------------
+if __name__ == "__main__":   # FIXED
+    # Create the CBR system
+    cbr_system = CaseBasedReasoning()
+
+    # Add past cases
+    cbr_system.add_case([2.0, 3.0], 'A')
+    cbr_system.add_case([1.0, 1.0], 'B')
+    cbr_system.add_case([4.0, 5.0], 'A')
+    cbr_system.add_case([3.0, 2.0], 'B')
+
+    # Query case
+    query_case = [2.5, 3.5]
+
+    # Retrieve similar cases
+    similar_cases = cbr_system.retrieve(query_case, k=2)
+    print("Most similar cases:")
+    for dist, label in similar_cases:
+        print(f"Distance: {dist:.2f}, Label: {label}")
+
+    # Make a prediction
+    prediction = cbr_system.predict(query_case, k=2)
+    print(f"Predicted label: {prediction}")
